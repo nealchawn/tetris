@@ -13,9 +13,11 @@
 #include <iostream>
 #include <chrono>
 #include <vector>
-using namespace std;
+
 
 #include <Windows.h>
+
+using namespace std;
 
 wstring tetromino[7];
 
@@ -25,53 +27,29 @@ int n_field_height = 18;
 unsigned char *p_field = nullptr;
 
 // for terminal screen
-//wchar_t *screen;
+wchar_t *screen = nullptr;
+HANDLE h_console;
+DWORD dw_bytes_written = 0;
 
 
 // Terminal / Console screen size
 int n_screen_width = 80;
 int n_screen_height = 30;
 
+// Function Prototypes
 void create_assets();
 int Rotate(int px, int py, int r);
 void create_playing_field();
 void init_command_line_screen();
 bool does_piece_fit(int n_tetromino, int n_rotation, int n_pos_x, int n_pos_y);
+void resize_screen();
 
 int main(){
 
   create_assets();
   create_playing_field();
-
-  wchar_t *screen = new wchar_t[n_screen_width*n_screen_height];
-  for (int i = 0; i < n_screen_width*n_screen_height; i++) screen[i] = L' ';
-  HANDLE h_console = CreateConsoleScreenBuffer(GENERIC_READ | GENERIC_WRITE, 0, NULL, CONSOLE_TEXTMODE_BUFFER, NULL);
-  SetConsoleActiveScreenBuffer(h_console); // This is default out instead of cout
-  DWORD dw_bytes_written = 0;
-
-
-  // Fix Screen Sizing
-  _COORD coord;
-  coord.X = 80;
-  coord.Y = 34;
-
-  _SMALL_RECT Rect;
-  Rect.Top = 0;
-  Rect.Left = 0;
-  Rect.Bottom = 30 -5;
-  Rect.Right = 80 -1;
-
-  SetConsoleScreenBufferSize(h_console,coord);
-  SetConsoleWindowInfo(h_console, TRUE, &Rect);
-
-  Rect.Top = 0;
-  Rect.Left = 0;
-  Rect.Bottom = 30 +3;
-  Rect.Right = 80 -1;
-
-  SetConsoleScreenBufferSize(h_console,coord);
-  SetConsoleWindowInfo(h_console, TRUE, &Rect);
-  // Fix Screen Sizing End In short Causing a resize
+  init_command_line_screen();
+  resize_screen();
 
 
   // Game Logic
@@ -271,6 +249,32 @@ void create_assets(){
   tetromino[6].append(L".X..");
 }
 
+// Fix initial screen size -- effectively triggering word wrap
+void resize_screen(){
+    // Fix Screen Sizing
+    _COORD coord;
+    coord.X = 80;
+    coord.Y = 34;
+
+    _SMALL_RECT Rect;
+    Rect.Top = 0;
+    Rect.Left = 0;
+    Rect.Bottom = 30 -5;
+    Rect.Right = 80 -1;
+
+    SetConsoleScreenBufferSize(h_console,coord);
+    SetConsoleWindowInfo(h_console, TRUE, &Rect);
+
+    Rect.Top = 0;
+    Rect.Left = 0;
+    Rect.Bottom = 30 +3;
+    Rect.Right = 80 -1;
+
+    SetConsoleScreenBufferSize(h_console,coord);
+    SetConsoleWindowInfo(h_console, TRUE, &Rect);
+    // Fix Screen Sizing End In short Causing a resize
+}
+
 /**
 takes in x and y assuming 4x4 grid for tetrimino
 r = 0, 1, or 2 or 0, 90, 180, or 270 rotation
@@ -310,16 +314,12 @@ effectively use the command line as a screen buffer
 **/
 
 void init_command_line_screen(){
-  wchar_t *screen = new wchar_t[n_screen_width*n_screen_height];
-
-  for (int i = 0; i < n_screen_width*n_screen_height; i++)
-  {
-    screen[i] = L' ';
-  }
-
-  HANDLE h_console = CreateConsoleScreenBuffer(GENERIC_READ | GENERIC_WRITE, 0, NULL, CONSOLE_TEXTMODE_BUFFER, NULL);
+  screen = new wchar_t[n_screen_width*n_screen_height];
+  for (int i = 0; i < n_screen_width*n_screen_height; i++) screen[i] = L' ';
+  h_console = CreateConsoleScreenBuffer(GENERIC_READ | GENERIC_WRITE, 0, NULL, CONSOLE_TEXTMODE_BUFFER, NULL);
   SetConsoleActiveScreenBuffer(h_console); // This is default out instead of cout
-  DWORD dw_bytes_written = 0;
+
+  dw_bytes_written = 0;
 
   // Display Frame: and now we need to use a seperate command to draw to the buffer
   //WriteConsoleOutputCharacter(h_console, screen, n_screen_width * n_screen_height, {0,0}, &dw_bytes_written);
