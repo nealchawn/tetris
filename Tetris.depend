@@ -1,0 +1,8 @@
+# depslib dependency file v1.0
+1610896174 source:c:\users\zzz\code\c++\tetris\main.cpp
+	<thread>
+	<iostream>
+	<chrono>
+	<vector>
+	<Windows.h>
+
