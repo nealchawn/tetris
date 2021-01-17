@@ -36,6 +36,9 @@ DWORD dw_bytes_written = 0;
 int n_screen_width = 80;
 int n_screen_height = 30;
 
+// Game Initial configs
+int n_score = 0;
+
 // Function Prototypes
 void create_assets();
 int Rotate(int px, int py, int r);
@@ -44,6 +47,11 @@ void init_command_line_screen();
 bool does_piece_fit(int n_tetromino, int n_rotation, int n_pos_x, int n_pos_y);
 void resize_screen();
 
+void play_game();
+void start_menu();
+void create_menu();
+void clear_screen();
+
 int main(){
 
   create_assets();
@@ -51,8 +59,122 @@ int main(){
   init_command_line_screen();
   resize_screen();
 
+  start_menu();
 
-  // Game Logic
+  //play_game();
+
+  // Game Over :(
+  CloseHandle(h_console);
+  cout << "Game Over!! Score: "<< n_score << endl;
+  system("pause");
+
+  return 0;
+}
+
+void start_menu(){
+    bool b_key[4];
+
+    while(1){
+
+        // Input
+        for(int k = 0; k < 4; k++){                              //Up  Down Enter
+            b_key[k] = (0x8000 & GetAsyncKeyState((unsigned char)("\x26\x28\x0D"[k]))) != 0;
+        }
+        // If Up
+        if(b_key[0]){
+        }
+        // If Down
+        if(b_key[1]){
+        }
+        // If Enter
+        if(b_key[2]){
+            clear_screen();
+            play_game();
+        }
+
+        // Draw Field w = 12 h = 18
+        /**
+        for (int x = 0; x < n_field_width; x++)
+        {
+          for (int y = 0; y < n_field_height; y++)
+          {
+              // screen buffer offset by 2x2 within the bounds of the playing field
+              // p_field has 9 or 0 based on position thus
+              // "abcde.."[9 || 0]
+            screen[(y+2)*n_screen_width+(x+2)] = L" ABCDEFG=#"[p_field[y*n_field_width +x]];
+          }
+        }
+        **/
+
+        create_menu();
+
+        // Display frame
+        WriteConsoleOutputCharacter(h_console, screen, n_screen_width * n_screen_height, {0,0}, &dw_bytes_written);
+
+    }
+}
+
+void clear_screen(){
+    for(int px = 1; px < n_field_width - 1; px++){
+        for(int py = (n_field_height - 2); py > 0; py--){ // remeber py-- actually goes up the rows above
+            p_field[py * n_field_width + px] = 0;
+        }
+        p_field[px] = 0;
+    }
+
+    for (int x = 0; x < n_field_width; x++)
+    {
+      for (int y = 0; y < n_field_height; y++)
+      {
+        screen[(y+2)*n_screen_width+(x+2)] = L" ABCDEFG=#"[p_field[y*n_field_width +x]];
+      }
+    }
+    WriteConsoleOutputCharacter(h_console, screen, n_screen_width * n_screen_height, {0,0}, &dw_bytes_written);
+}
+
+void create_menu(){
+  int x = 0;
+  int y = 0;
+
+  x = 3;y=0;
+  screen[(y+2)*n_screen_width+(x+2)] = L'T';
+  x = 4;y=0;
+  screen[(y+2)*n_screen_width+(x+2)] = L'e';
+  x = 5;y=0;
+  screen[(y+2)*n_screen_width+(x+2)] = L't';
+  x = 6;y=0;
+  screen[(y+2)*n_screen_width+(x+2)] = L'r';
+  x = 7;y=0;
+  screen[(y+2)*n_screen_width+(x+2)] = L'i';
+  x = 8;y=0;
+  screen[(y+2)*n_screen_width+(x+2)] = L's';
+
+  x = 3;y=3;
+  screen[(y+2)*n_screen_width+(x+2)] = L'P';
+  x = 4;y=3;
+  screen[(y+2)*n_screen_width+(x+2)] = L'r';
+  x = 5;y=3;
+  screen[(y+2)*n_screen_width+(x+2)] = L'e';
+  x = 6;y=3;
+  screen[(y+2)*n_screen_width+(x+2)] = L's';
+  x = 7;y=3;
+  screen[(y+2)*n_screen_width+(x+2)] = L's';
+
+  x = 3;y=4;
+  screen[(y+2)*n_screen_width+(x+2)] = L'E';
+  x = 4;y=4;
+  screen[(y+2)*n_screen_width+(x+2)] = L'n';
+  x = 5;y=4;
+  screen[(y+2)*n_screen_width+(x+2)] = L't';
+  x = 6;y=4;
+  screen[(y+2)*n_screen_width+(x+2)] = L'e';
+  x = 7;y=4;
+  screen[(y+2)*n_screen_width+(x+2)] = L'r';
+
+}
+
+void play_game(){
+    // Game Logic
   bool b_game_over = false;
 
   int n_current_piece = 0;
@@ -67,7 +189,7 @@ int main(){
   int n_speed_counter = 0;
   bool b_force_down = false;
   int n_piece_count = 0;
-  int n_score = 0;
+  n_score = 0;
 
 
   vector<int> v_lines;
@@ -189,13 +311,7 @@ int main(){
     WriteConsoleOutputCharacter(h_console, screen, n_screen_width * n_screen_height, {0,0}, &dw_bytes_written);
 
   }
-
-  // Game Over :(
-  CloseHandle(h_console);
-  cout << "Game Over!! Score: "<< n_score << endl;
-  system("pause");
-
-  return 0;
+  clear_screen();
 }
 
 /**
