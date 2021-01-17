@@ -19,19 +19,7 @@ using namespace std;
 
 wstring tetromino[7];
 
-/**
-  Playing field dimensions from gameboy
-  Store elements of the field as an array of unsigned chars.
-  Dynamically not statically.
 
-  this way: all map info stored in this array
-   0 means empty spaces
-   1 means part of the shape
-   2 means different shape
-   ...
-   9 means boundary walls
-
-**/
 int n_field_width = 12;
 int n_field_height = 18;
 unsigned char *p_field = nullptr;
@@ -44,123 +32,11 @@ unsigned char *p_field = nullptr;
 int n_screen_width = 80;
 int n_screen_height = 30;
 
-
-void create_assets(){
-  tetromino[0].append(L"..X.");
-  tetromino[0].append(L"..X.");
-  tetromino[0].append(L"..X.");
-  tetromino[0].append(L"..X.");
-
-  tetromino[1].append(L"..X.");
-  tetromino[1].append(L".XX.");
-  tetromino[1].append(L".X..");
-  tetromino[1].append(L"....");
-
-  tetromino[2].append(L".X..");
-  tetromino[2].append(L".XX.");
-  tetromino[2].append(L"..X.");
-  tetromino[2].append(L"....");
-
-  tetromino[3].append(L"....");
-  tetromino[3].append(L".XX.");
-  tetromino[3].append(L".XX.");
-  tetromino[3].append(L"....");
-
-  tetromino[4].append(L"..X.");
-  tetromino[4].append(L"..X.");
-  tetromino[4].append(L".XX.");
-  tetromino[4].append(L"....");
-
-  tetromino[5].append(L"....");
-  tetromino[5].append(L".XX.");
-  tetromino[5].append(L"..X.");
-  tetromino[5].append(L"..X.");
-
-  tetromino[6].append(L"....");
-  tetromino[6].append(L".XX.");
-  tetromino[6].append(L".X..");
-  tetromino[6].append(L".X..");
-}
-
-/**
-takes in x and y assuming 4x4 grid for tetrimino
-r = 0, 1, or 2 or 0, 90, 180, or 270 rotation
-
-**/
-int Rotate(int px, int py, int r){
-  switch( r % 4){
-    case 0: return py * 4 + px; // 0 degress
-    case 1: return 12 + py - (px * 4);  // 90 degrees
-    case 2: return 15 - ( py * 4) -px; // 180 degrees
-    case 3: return 3 - py + (px * 4); // 270 degrees
-  }
-  return 0;
-}
-
-/**
-initialize array for the playing field.
-
-set everything in the array to 0 unless,
-its on the side of the array or at the bottom.
-
-thus 9 will represent the boarder
-
-**/
-void create_playing_field(){
-  p_field = new unsigned char[n_field_width * n_field_height]; // create play field buffer
-  for(int x = 0; x < n_field_width; x++){ // Board Boundary
-    for (int y = 0; y < n_field_height; y++)
-    {
-      p_field[y*n_field_width + x] = (x == 0 || x == n_field_width - 1 || y == n_field_height - 1) ? 9 : 0;
-    }
-  }
-}
-
-/**
-effectively use the command line as a screen buffer
-**/
-
-void init_command_line_screen(){
-  wchar_t *screen = new wchar_t[n_screen_width*n_screen_height];
-
-  for (int i = 0; i < n_screen_width*n_screen_height; i++)
-  {
-    screen[i] = L' ';
-  }
-
-  HANDLE h_console = CreateConsoleScreenBuffer(GENERIC_READ | GENERIC_WRITE, 0, NULL, CONSOLE_TEXTMODE_BUFFER, NULL);
-  SetConsoleActiveScreenBuffer(h_console); // This is default out instead of cout
-  DWORD dw_bytes_written = 0;
-
-  // Display Frame: and now we need to use a seperate command to draw to the buffer
-  //WriteConsoleOutputCharacter(h_console, screen, n_screen_width * n_screen_height, {0,0}, &dw_bytes_written);
-
-}
-
-bool does_piece_fit(int n_tetromino, int n_rotation, int n_pos_x, int n_pos_y){
-    // iterating over every piece of current tetris object
-    for(int px = 0; px < 4; px++){
-        for(int py = 0; py < 4; py++){
-
-            // Get index into piece
-            int pi = Rotate(px, py, n_rotation);
-
-            // Get index into field
-            int fi = (n_pos_y + py) * n_field_width + (n_pos_x +px);
-
-            if(n_pos_x + px >= 0 && n_pos_x +px < n_field_width){
-               if(n_pos_y + py >= 0 && n_pos_y + py < n_field_height){
-                if(tetromino[n_tetromino][pi] == L'X' && p_field[fi] != 0)
-                    return false; // fail on first hit
-               }
-            }
-        }
-    }
-    return true;
-}
-
-void resize_screen(){
-}
+void create_assets();
+int Rotate(int px, int py, int r);
+void create_playing_field();
+void init_command_line_screen();
+bool does_piece_fit(int n_tetromino, int n_rotation, int n_pos_x, int n_pos_y);
 
 int main(){
 
@@ -344,7 +220,133 @@ int main(){
   return 0;
 }
 
+/**
+  Playing field dimensions from gameboy
+  Store elements of the field as an array of unsigned chars.
+  Dynamically not statically.
 
+  this way: all map info stored in this array
+   0 means empty spaces
+   1 means part of the shape
+   2 means different shape
+   ...
+   9 means boundary walls
+
+**/
+
+void create_assets(){
+  tetromino[0].append(L"..X.");
+  tetromino[0].append(L"..X.");
+  tetromino[0].append(L"..X.");
+  tetromino[0].append(L"..X.");
+
+  tetromino[1].append(L"..X.");
+  tetromino[1].append(L".XX.");
+  tetromino[1].append(L".X..");
+  tetromino[1].append(L"....");
+
+  tetromino[2].append(L".X..");
+  tetromino[2].append(L".XX.");
+  tetromino[2].append(L"..X.");
+  tetromino[2].append(L"....");
+
+  tetromino[3].append(L"....");
+  tetromino[3].append(L".XX.");
+  tetromino[3].append(L".XX.");
+  tetromino[3].append(L"....");
+
+  tetromino[4].append(L"..X.");
+  tetromino[4].append(L"..X.");
+  tetromino[4].append(L".XX.");
+  tetromino[4].append(L"....");
+
+  tetromino[5].append(L"....");
+  tetromino[5].append(L".XX.");
+  tetromino[5].append(L"..X.");
+  tetromino[5].append(L"..X.");
+
+  tetromino[6].append(L"....");
+  tetromino[6].append(L".XX.");
+  tetromino[6].append(L".X..");
+  tetromino[6].append(L".X..");
+}
+
+/**
+takes in x and y assuming 4x4 grid for tetrimino
+r = 0, 1, or 2 or 0, 90, 180, or 270 rotation
+
+**/
+int Rotate(int px, int py, int r){
+  switch( r % 4){
+    case 0: return py * 4 + px; // 0 degress
+    case 1: return 12 + py - (px * 4);  // 90 degrees
+    case 2: return 15 - ( py * 4) -px; // 180 degrees
+    case 3: return 3 - py + (px * 4); // 270 degrees
+  }
+  return 0;
+}
+
+/**
+initialize array for the playing field.
+
+set everything in the array to 0 unless,
+its on the side of the array or at the bottom.
+
+thus 9 will represent the boarder
+
+**/
+void create_playing_field(){
+  p_field = new unsigned char[n_field_width * n_field_height]; // create play field buffer
+  for(int x = 0; x < n_field_width; x++){ // Board Boundary
+    for (int y = 0; y < n_field_height; y++)
+    {
+      p_field[y*n_field_width + x] = (x == 0 || x == n_field_width - 1 || y == n_field_height - 1) ? 9 : 0;
+    }
+  }
+}
+
+/**
+effectively use the command line as a screen buffer
+**/
+
+void init_command_line_screen(){
+  wchar_t *screen = new wchar_t[n_screen_width*n_screen_height];
+
+  for (int i = 0; i < n_screen_width*n_screen_height; i++)
+  {
+    screen[i] = L' ';
+  }
+
+  HANDLE h_console = CreateConsoleScreenBuffer(GENERIC_READ | GENERIC_WRITE, 0, NULL, CONSOLE_TEXTMODE_BUFFER, NULL);
+  SetConsoleActiveScreenBuffer(h_console); // This is default out instead of cout
+  DWORD dw_bytes_written = 0;
+
+  // Display Frame: and now we need to use a seperate command to draw to the buffer
+  //WriteConsoleOutputCharacter(h_console, screen, n_screen_width * n_screen_height, {0,0}, &dw_bytes_written);
+
+}
+
+bool does_piece_fit(int n_tetromino, int n_rotation, int n_pos_x, int n_pos_y){
+    // iterating over every piece of current tetris object
+    for(int px = 0; px < 4; px++){
+        for(int py = 0; py < 4; py++){
+
+            // Get index into piece
+            int pi = Rotate(px, py, n_rotation);
+
+            // Get index into field
+            int fi = (n_pos_y + py) * n_field_width + (n_pos_x +px);
+
+            if(n_pos_x + px >= 0 && n_pos_x +px < n_field_width){
+               if(n_pos_y + py >= 0 && n_pos_y + py < n_field_height){
+                if(tetromino[n_tetromino][pi] == L'X' && p_field[fi] != 0)
+                    return false; // fail on first hit
+               }
+            }
+        }
+    }
+    return true;
+}
 
 // FAQ
 
